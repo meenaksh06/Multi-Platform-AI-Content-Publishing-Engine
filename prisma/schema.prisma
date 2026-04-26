@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String          @id @default(uuid())
+  email          String          @unique
+  password       String
+  refreshToken   String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  socialAccounts SocialAccount[]
+  aiKeys         AiKey[]
+  posts          Post[]
+
+  @@map("users")
+}
+
+model SocialAccount {
+  id           String   @id @default(uuid())
+  userId       String
+  platform     String   // e.g., 'twitter', 'linkedin', 'instagram', 'threads'
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@map("social_accounts")
+}
+
+model AiKey {
+  id        String   @id @default(uuid())
+  userId    String
+  provider  String   // e.g., 'openai', 'anthropic'
+  apiKey    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@map("ai_keys")
+}
+
+model Post {
+  id            String         @id @default(uuid())
+  userId        String
+  idea          String?
+  tone          String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  platformPosts PlatformPost[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("posts")
+}
+
+model PlatformPost {
+  id          String    @id @default(uuid())
+  postId      String
+  platform    String    // e.g., 'twitter', 'linkedin'
+  content     String
+  status      String    @default("PENDING") // PENDING, PUBLISHING, PUBLISHED, FAILED
+  error       String?
+  jobId       String?
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("platform_posts")
+}
