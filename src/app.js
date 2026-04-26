@@ -3,6 +3,10 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 
+const routes = require('./routes');
+const errorHandler = require('./middlewares/errorHandler');
+const { AppError } = require('./utils/errors');
+
 const app = express();
 
 // Middlewares
@@ -20,5 +24,16 @@ app.get('/health', (req, res) => {
     error: null
   });
 });
+
+// API Routes
+app.use('/api', routes);
+
+// 404 Handler
+app.use((req, res, next) => {
+  next(new AppError(404, 'Not found'));
+});
+
+// Error Handler
+app.use(errorHandler);
 
 module.exports = app;
