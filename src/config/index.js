@@ -7,5 +7,8 @@ module.exports = {
     secret: process.env.JWT_SECRET || 'supersecretkey',
     accessExpiration: '15m',
     refreshExpiration: '7d'
+  },
+  telegram: {
+    botToken: process.env.TELEGRAM_BOT_TOKEN
   }
 };
