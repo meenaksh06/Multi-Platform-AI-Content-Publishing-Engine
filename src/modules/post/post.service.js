@@ -1,5 +1,6 @@
 const prisma = require('../../config/db');
 const { AppError } = require('../../utils/errors');
+const { enqueuePlatformPost } = require('../queue/queue.service');
 
 const createPost = async (userId, data) => {
   const { idea, tone, platforms } = data;
@@ -21,6 +22,11 @@ const createPost = async (userId, data) => {
       platformPosts: true
     }
   });
+
+  // Enqueue publishing jobs for each platform
+  for (const pp of post.platformPosts) {
+    await enqueuePlatformPost(pp.id, pp.platform, pp.content);
+  }
 
   return post;
 };
