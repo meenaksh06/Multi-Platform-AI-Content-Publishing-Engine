@@ -47,6 +47,7 @@ The repository strictly adheres to a layered architecture for separation of conc
 - Refresh token rotation stored within the database for invalidation capabilities.
 - Password hashing utilizing bcrypt with a work factor cost of 12.
 - Secure, environment-based configuration for third-party API keys and secrets.
+- Global API rate limiting and strict authentication endpoint limits to prevent brute-force attacks and abuse.
 
 ## Telegram Bot Flow
 - Triggered via /post command, collecting constraints iteratively: type → platform → tone → model → idea → preview → confirm.
@@ -121,4 +122,3 @@ docker-compose up --build
 ## Future Improvements
 - Implementation of standardized OAuth 2.0 flows for all social integrations.
 - Comprehensive analytics and click-through tracking for published content.
-- Global and user-level rate limiting middleware to prevent abuse.
