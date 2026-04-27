@@ -2,6 +2,8 @@ const { Telegraf } = require('telegraf');
 const config = require('../../config');
 const { redisClient } = require('../../config/redis');
 const { generateContent } = require('../ai/ai.service');
+const { createPost } = require('../post/post.service');
+const prisma = require('../../config/db');
 
 let bot;
 
@@ -102,9 +104,27 @@ const initBot = () => {
 
       case 'AWAITING_CONFIRM':
         if (text.toLowerCase() === 'yes') {
-          // In Phase 8/9/10 we will save to DB and send to Queue.
-          await clearSession(userId);
-          return ctx.reply('Awesome! Your post has been scheduled for publishing. 🚀');
+          try {
+            // For demo purposes, we attach the post to the first registered user
+            const user = await prisma.user.findFirst();
+            if (!user) {
+              return ctx.reply('Error: No registered users found in the system. Please register via the API first.');
+            }
+
+            await createPost(user.id, {
+              idea: session.data.idea,
+              tone: session.data.tone,
+              platforms: [{
+                platform: session.data.platform,
+                content: session.data.generatedContent
+              }]
+            });
+            await clearSession(userId);
+            return ctx.reply('Awesome! Your post has been saved and scheduled for publishing. 🚀');
+          } catch (error) {
+            console.error('Failed to save post:', error);
+            return ctx.reply('Failed to save the post to the database.');
+          }
         } else if (text.toLowerCase() === 'no') {
           await clearSession(userId);
           return ctx.reply('Post discarded. You can start over with /newpost.');
