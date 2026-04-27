@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postly_user:password@db:5432/postly_db?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=supersecretkey123
+      # These need to be injected via `.env` file on host
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    # Run Prisma migrations before starting the Node server
+    command: >
+      sh -c "npx prisma migrate deploy && npm start"
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postly_user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postly_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postly_user -d postly_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:
