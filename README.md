@@ -1,7 +1,7 @@
 # Postly — AI Content Publishing Engine
 
 ## Live API
-[https://api.postly.example.com](https://api.postly.example.com)
+*Currently in development - running locally at `http://localhost:3000`*
 
 ## Overview
 Postly is a production-grade backend engine that automates the generation and multi-platform publishing of AI-crafted content. 
