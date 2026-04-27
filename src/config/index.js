@@ -10,5 +10,8 @@ module.exports = {
   },
   telegram: {
     botToken: process.env.TELEGRAM_BOT_TOKEN
+  },
+  redis: {
+    url: process.env.REDIS_URL || 'redis://localhost:6379'
   }
 };
