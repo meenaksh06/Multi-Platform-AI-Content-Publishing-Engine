@@ -1,6 +1,7 @@
 const { Telegraf } = require('telegraf');
 const config = require('../../config');
 const { redisClient } = require('../../config/redis');
+const { generateContent } = require('../ai/ai.service');
 
 let bot;
 
@@ -77,13 +78,27 @@ const initBot = () => {
 
       case 'AWAITING_IDEA':
         session.data.idea = text;
-        session.state = 'AWAITING_CONFIRM';
-        await setSession(userId, session);
         
-        // In Phase 7 we will call the AI Engine here. For now, mock it.
-        const mockPreview = `[MOCK AI PREVIEW]\nPlatform: ${session.data.platform}\nTone: ${session.data.tone}\n\n"Here is an amazing ${session.data.type} about ${session.data.idea.substring(0, 20)}..."\n\n#AI #Content`;
-        
-        return ctx.reply(`Here is a preview of your post:\n\n${mockPreview}\n\nDo you want to publish this? (reply 'yes' or 'no')`);
+        ctx.reply('Generating your content... Please wait ⏳');
+
+        try {
+          const generatedContent = await generateContent(userId, {
+            type: session.data.type,
+            platform: session.data.platform,
+            tone: session.data.tone,
+            model: session.data.model,
+            idea: session.data.idea
+          });
+          
+          session.data.generatedContent = generatedContent;
+          session.state = 'AWAITING_CONFIRM';
+          await setSession(userId, session);
+
+          return ctx.reply(`Here is a preview of your post:\n\n${generatedContent}\n\nDo you want to publish this? (reply 'yes' or 'no')`);
+        } catch (error) {
+          await clearSession(userId);
+          return ctx.reply(`Error generating content: ${error.message}. Please try /newpost again.`);
+        }
 
       case 'AWAITING_CONFIRM':
         if (text.toLowerCase() === 'yes') {

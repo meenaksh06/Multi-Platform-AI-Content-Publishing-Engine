@@ -13,5 +13,9 @@ module.exports = {
   },
   redis: {
     url: process.env.REDIS_URL || 'redis://localhost:6379'
+  },
+  ai: {
+    openaiKey: process.env.OPENAI_API_KEY,
+    anthropicKey: process.env.ANTHROPIC_API_KEY
   }
 };
