@@ -16,6 +16,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan('dev'));
 
+const { apiLimiter } = require('./middlewares/rateLimiter');
+app.use('/api', apiLimiter);
+
 // Health Check
 app.get('/health', (req, res) => {
   res.status(200).json({
